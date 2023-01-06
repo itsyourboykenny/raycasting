@@ -1,0 +1,13 @@
+<diagram program="umletino" version="15.0.0"><zoom_level>10</zoom_level><element><id>UMLClass</id><coordinates><x>310</x><y>230</y><w>210</w><h>70</h></coordinates><panel_attributes>_User Input_
+--
+id: Long="36548"
+[waiting for message]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>550</x><y>230</y><w>210</w><h>70</h></coordinates><panel_attributes>_Map_
+--
+id: Long="36548"
+[waiting for message]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>790</x><y>230</y><w>210</w><h>70</h></coordinates><panel_attributes>_Raycast Stuff_
+--
+id: Long="36548"
+[waiting for message]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>70</x><y>230</y><w>210</w><h>70</h></coordinates><panel_attributes>_Player Location_
+--
+* X, Y Coordinates
+* Angle</panel_attributes><additional_attributes></additional_attributes></element></diagram>
