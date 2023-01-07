@@ -1,23 +1,25 @@
 class Joystick {
     constructor(idName, maxDist) {
-        var _a, _b, _c, _d, _e;
         this.id = idName;
         this.canvas = document.getElementById(idName);
+        this.ctx = this.canvas.getContext('2d');
         this.dragStart = { x: 0, y: 0 };
         this.xy = { x: 0, y: 0 };
         this.touchID = 0;
-        this.maxDistance = ((_a = this.canvas) === null || _a === void 0 ? void 0 : _a.offsetWidth) / 2;
+        this.maxDistance = this.canvas.offsetWidth / 2;
         this.active = false;
-        (_b = this.canvas) === null || _b === void 0 ? void 0 : _b.addEventListener('touchstart', this.touchDown.bind(this));
-        (_c = this.canvas) === null || _c === void 0 ? void 0 : _c.addEventListener('touchmove', this.touchMove.bind(this));
+        this.canvas.addEventListener('touchstart', this.touchDown.bind(this));
+        this.canvas.addEventListener('touchmove', this.touchMove.bind(this));
         window.addEventListener('touchend', this.touchUp.bind(this));
-        (_d = this.canvas) === null || _d === void 0 ? void 0 : _d.addEventListener('mousedown', this.touchDown.bind(this));
-        (_e = this.canvas) === null || _e === void 0 ? void 0 : _e.addEventListener('mousemove', this.touchMove.bind(this));
+        this.canvas.addEventListener('mousedown', this.touchDown.bind(this));
+        this.canvas.addEventListener('mousemove', this.touchMove.bind(this));
         window.addEventListener('mouseup', this.touchUp.bind(this));
     }
     touchDown(event) {
         event.preventDefault();
         this.active = true;
+        this.canvas.width = this.canvas.offsetWidth;
+        this.canvas.height = this.canvas.offsetHeight;
         if (event instanceof TouchEvent) {
             this.dragStart.x = event.changedTouches[0].clientX;
             this.dragStart.y = event.changedTouches[0].clientY;
@@ -27,7 +29,6 @@ class Joystick {
             this.dragStart.x = event.clientX;
             this.dragStart.y = event.clientY;
         }
-        console.log(`touchDown x:${this.dragStart.x}, y:${this.dragStart.y}`);
     }
     touchMove(event) {
         if (!this.active)
@@ -47,16 +48,30 @@ class Joystick {
             dy = e.clientY - this.dragStart.y;
         }
         this.xy = { x: this.minMax(dx), y: this.minMax(dy) };
-        console.log(`touchMove x:${this.xy.x}, y:${this.xy.y}`);
+        this.drawPath(this.xy);
     }
     touchUp(event) {
+        if ((event instanceof TouchEvent)
+            && (event.changedTouches[0].identifier != this.touchID))
+            return;
         this.active = false;
         this.xy = { x: 0, y: 0 };
-        console.log(`touchEnd`);
+        this.ctx.beginPath();
+        this.ctx.clearRect(0, 0, this.canvas.offsetWidth, this.canvas.offsetHeight);
     }
     minMax(i) {
         let temp = Math.min(i, this.maxDistance);
         temp = Math.max(-this.maxDistance, temp);
         return temp;
+    }
+    drawPath(change) {
+        let centerX = this.canvas.offsetWidth / 2;
+        let centerY = this.canvas.offsetHeight / 2;
+        this.ctx.beginPath();
+        this.ctx.clearRect(0, 0, this.canvas.offsetWidth, this.canvas.offsetHeight);
+        this.ctx.moveTo(centerX, centerY);
+        this.ctx.lineTo(centerX + change.x, centerY + change.y);
+        this.ctx.strokeStyle = 'black';
+        this.ctx.stroke();
     }
 }
