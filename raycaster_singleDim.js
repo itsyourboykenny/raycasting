@@ -12,7 +12,7 @@ class LocationData {
         this.coordinateAngle = 0;
         this.speedMultiplier = 0.15;
         this.rotationSpeed = 0.05;
-        this.keyMap = new Map();
+        this.keyMap = {};
         this.playerSize = 1;
         this.fov = 60 * Math.PI / 180;
         this.worldMap = map;
@@ -37,21 +37,21 @@ class LocationData {
             (event.code == 'KeyS') ||
             (event.code == 'KeyA') ||
             (event.code == 'KeyD')) {
-            this.keyMap.set(event.code, (event.type == 'keydown'));
+            this.keyMap[event.code] = (event.type == 'keydown');
         }
     }
     update() {
-        if (this.keyMap.get('ArrowLeft'))
+        if (this.keyMap['ArrowLeft'])
             this.left();
-        if (this.keyMap.get('ArrowRight'))
+        if (this.keyMap['ArrowRight'])
             this.right();
-        if (this.keyMap.get('KeyW'))
+        if (this.keyMap['KeyW'])
             this.up();
-        if (this.keyMap.get('KeyS'))
+        if (this.keyMap['KeyS'])
             this.down();
-        if (this.keyMap.get('KeyA'))
+        if (this.keyMap['KeyA'])
             this.strafeLeft();
-        if (this.keyMap.get('KeyD'))
+        if (this.keyMap['KeyD'])
             this.strafeRight();
     }
     startLogger() {
@@ -129,8 +129,7 @@ class Minimap {
         this.data = theData;
     }
     clearScreen() {
-        if (this.canvas != null && this.ctx != null)
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
     draw(input) {
         this.drawPlayer();
@@ -138,18 +137,14 @@ class Minimap {
         // this.drawSplines();
     }
     drawPlayer() {
-        if (this.canvas == null || this.ctx == null)
-            return;
         let dotSize = (this.canvas.width / this.data.worldWidth) / 2;
         this.ctx.beginPath();
         this.ctx.moveTo(this.data.coordinateX / this.data.worldWidth * this.canvas.width, this.canvas.height - this.data.coordinateY / this.data.worldHeight * this.canvas.height);
         this.ctx.arc(this.data.coordinateX / this.data.worldWidth * this.canvas.width, this.canvas.height - this.data.coordinateY / this.data.worldHeight * this.canvas.height, dotSize, 0, 2 * Math.PI);
-        this.ctx.fillStyle = 'Black';
+        this.ctx.fillSyle = 'Black';
         this.ctx.fill();
     }
     drawAngle(angle) {
-        if (this.canvas == null || this.ctx == null)
-            return;
         this.ctx.beginPath();
         this.ctx.moveTo(this.data.coordinateX / this.data.worldWidth * this.canvas.width, this.canvas.height - this.data.coordinateY / this.data.worldHeight * this.canvas.height);
         let endpoint = RayCaster.castSingleRay(this.data.coordinateX, this.data.coordinateY, angle, this.data.worldMap);
@@ -158,13 +153,10 @@ class Minimap {
         this.ctx.stroke();
     }
     drawArea(input) {
-        if (this.canvas == null || this.ctx == null)
-            return;
         this.ctx.beginPath();
         this.ctx.moveTo(this.data.coordinateX / this.data.worldWidth * this.canvas.width, this.canvas.height - this.data.coordinateY / this.data.worldHeight * this.canvas.height);
         input.forEach((endpoint) => {
-            if (this.canvas != null && this.ctx != null)
-                this.ctx.lineTo(endpoint.x / this.data.worldWidth * this.canvas.width, this.canvas.height - endpoint.y / this.data.worldHeight * this.canvas.height);
+            this.ctx.lineTo(endpoint.x / this.data.worldWidth * this.canvas.width, this.canvas.height - endpoint.y / this.data.worldHeight * this.canvas.height);
         });
         this.ctx.moveTo(this.data.coordinateX / this.data.worldWidth * this.canvas.width, this.canvas.height - this.data.coordinateY / this.data.worldHeight * this.canvas.height);
         this.ctx.fillStyle = 'Red';
@@ -179,8 +171,6 @@ class Minimap {
         for (let y = 0; y < this.data.worldHeight; y++) {
             for (let x = 0; x < this.data.worldWidth; x++) {
                 if (map[y][x] > 0) {
-                    if (this.canvas == null || this.ctx == null)
-                        continue;
                     let currPosX = x / (this.data.worldWidth);
                     let currPosY = y / (this.data.worldHeight);
                     this.ctx.beginPath();
@@ -193,15 +183,12 @@ class Minimap {
         }
     }
     drawPath(path) {
-        if (this.canvas == null || this.ctx == null)
-            return;
         let height = this.data.worldHeight - 1;
         let width = this.data.worldWidth - 1;
         this.ctx.beginPath();
         this.ctx.moveTo(path[0].x / width * this.canvas.offsetWidth, path[0].y / height * this.canvas.offsetHeight);
         path.forEach((point) => {
-            if (this.canvas != null && this.ctx != null)
-                this.ctx.lineTo(point.x / width * this.canvas.offsetWidth, point.y / height * this.canvas.offsetHeight);
+            this.ctx.lineTo(point.x / width * this.canvas.offsetWidth, point.y / height * this.canvas.offsetHeight);
         });
         this.ctx.strokeStyle = 'Blue';
         this.ctx.stroke();
@@ -210,23 +197,18 @@ class Minimap {
 ;
 class Renderer {
     constructor(src, map) {
-        this.client = document.getElementById("gameContainer");
         this.maxDistance = 32;
         this.projectionDist = 16;
         this.wallHeight = 64;
         this.canvas = document.getElementById(src);
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = this.client.clientWidth;
-        this.canvas.height = this.client.clientHeight;
+        this.canvas.width = resolutionX;
+        this.canvas.height = resolutionY;
         this.minWallHeight = 0;
         this.maxWallHeight = this.canvas.height;
         this.playerHeight = 0.1 * this.canvas.height;
     }
     draw(input) {
-        if (this.canvas == null || this.ctx == null)
-            return;
-        this.canvas.width = this.client.clientWidth;
-        this.canvas.height = this.client.clientWidth * (3 / 4);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         let count = 0;
         while (count < input.length) {

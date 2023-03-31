@@ -1,3 +1,4 @@
+"use strict";
 class Joystick {
     constructor(idName, maxDist) {
         this.id = idName;
@@ -69,9 +70,8 @@ class Joystick {
         let centerY = this.canvas.offsetHeight / 2;
         this.ctx.beginPath();
         this.ctx.clearRect(0, 0, this.canvas.offsetWidth, this.canvas.offsetHeight);
-        this.ctx.moveTo(centerX, centerY);
-        this.ctx.lineTo(centerX + change.x, centerY + change.y);
-        this.ctx.strokeStyle = 'black';
-        this.ctx.stroke();
+        this.ctx.arc(centerX + this.xy.x, centerY + this.xy.y, this.canvas.width * 0.1, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "black";
+        this.ctx.fill();
     }
 }

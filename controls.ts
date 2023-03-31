@@ -27,7 +27,7 @@ class Joystick {
         window.addEventListener('mouseup', this.touchUp.bind(this));
     }
 
-    public touchDown(event) {
+    public touchDown(event: any) {
         event.preventDefault();
         this.active = true;
         this.canvas.width = this.canvas.offsetWidth;
@@ -45,7 +45,7 @@ class Joystick {
 
     }
 
-    public touchMove(event) {
+    public touchMove(event: any) {
         if (!this.active) return;
 
         let dx;
@@ -67,7 +67,7 @@ class Joystick {
         this.drawPath(this.xy);
     }
     
-    public touchUp(event) {
+    public touchUp(event: any) {
         if ((event instanceof TouchEvent)
             && ((event as TouchEvent).changedTouches[0].identifier != this.touchID))
                 return;
@@ -91,9 +91,8 @@ class Joystick {
 
         this.ctx.beginPath();
         this.ctx.clearRect(0,0,(this.canvas.offsetWidth as number), (this.canvas.offsetHeight as number));
-        this.ctx.moveTo(centerX, centerY);
-        this.ctx.lineTo(centerX + change.x, centerY + change.y);
-        this.ctx.strokeStyle = 'black';
-        this.ctx.stroke();
+        this.ctx.arc(centerX + this.xy.x, centerY + this.xy.y, this.canvas.width * 0.1, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "black";
+        this.ctx.fill();
     }
 }

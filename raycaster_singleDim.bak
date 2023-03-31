@@ -6,7 +6,7 @@ interface Number {
 }
 Number.prototype.mod = function (n) {
     "use strict";
-    return (((this as number) % n) + n) % n;
+    return ((this % n) + n) % n;
 };
 
 class LocationData {
@@ -15,12 +15,12 @@ class LocationData {
     public coordinateAngle: number = 0;
     private speedMultiplier: number = 0.15;
     private rotationSpeed: number = 0.05;
-    private keyMap = new Map<string, boolean>();
+    private keyMap = {};
     public worldMap;
     public playerSize: number = 1;
     public fov = 60 * Math.PI / 180;
 
-    constructor(map : number [][]) {
+    constructor(map) {
         this.worldMap = map;
         this.coordinateX = this.worldWidth/2;
         this.coordinateY = 2*this.worldHeight/3;
@@ -30,7 +30,7 @@ class LocationData {
     
     public get worldHeight() { return this.worldMap.length; }
     
-    public newMap(map : number [][]) { this.worldMap = map; }
+    public newMap(map) { this.worldMap = map; }
 
     public attach(): void {
         window.addEventListener('keydown', (event) => {
@@ -41,24 +41,24 @@ class LocationData {
         });
     }
 
-    public populateKeymap(event : KeyboardEvent) {
+    public populateKeymap(event) {
         if ((event.code == 'ArrowLeft') ||
             (event.code == 'ArrowRight') ||
             (event.code == 'KeyW') ||
             (event.code == 'KeyS') ||
             (event.code == 'KeyA') ||
             (event.code == 'KeyD')) {
-                this.keyMap.set(event.code, (event.type == 'keydown'));
+                this.keyMap[event.code] = (event.type == 'keydown');
         }
     }
 
     public update(): void {
-        if (this.keyMap.get('ArrowLeft')) this.left();
-        if (this.keyMap.get('ArrowRight')) this.right();
-        if (this.keyMap.get('KeyW')) this.up();
-        if (this.keyMap.get('KeyS')) this.down();
-        if (this.keyMap.get('KeyA')) this.strafeLeft();
-        if (this.keyMap.get('KeyD')) this.strafeRight();
+        if (this.keyMap['ArrowLeft']) this.left();
+        if (this.keyMap['ArrowRight']) this.right();
+        if (this.keyMap['KeyW']) this.up();
+        if (this.keyMap['KeyS']) this.down();
+        if (this.keyMap['KeyA']) this.strafeLeft();
+        if (this.keyMap['KeyD']) this.strafeRight();
     }
 
     public startLogger(): void {
@@ -139,21 +139,20 @@ class LocationData {
 };
 
 class Minimap {
-    public canvas: (HTMLCanvasElement | null);
-    public ctx: (CanvasRenderingContext2D | null);
+    public canvas;
+    public ctx;
     private data: LocationData;
 
     constructor(src: string, theData: LocationData) {
-        this.canvas = document.getElementById(src) as HTMLCanvasElement;
-        this.ctx = (this.canvas as HTMLCanvasElement).getContext('2d');
+        this.canvas = document.getElementById(src);
+        this.ctx = this.canvas.getContext('2d');
         this.canvas.width = 250;
         this.canvas.height = this.canvas.width * (theData.worldHeight/theData.worldWidth);
         this.data = theData;
     }
 
     clearScreen(): void {
-        if (this.canvas != null && this.ctx != null)
-            this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height);
     }
 
     draw(input:RayHit[]): void {
@@ -163,8 +162,6 @@ class Minimap {
     }
 
     drawPlayer(): void {
-        if (this.canvas == null || this.ctx == null)
-            return;
         let dotSize = (this.canvas.width / this.data.worldWidth) / 2;
 
         this.ctx.beginPath();
@@ -173,14 +170,11 @@ class Minimap {
         this.ctx.arc(this.data.coordinateX/this.data.worldWidth*this.canvas.width,
             this.canvas.height - this.data.coordinateY/this.data.worldHeight*this.canvas.height,
             dotSize, 0, 2*Math.PI);
-        this.ctx.fillStyle = 'Black';
+        this.ctx.fillSyle = 'Black';
         this.ctx.fill();
     }
 
     drawAngle(angle: number): void {
-        if (this.canvas == null || this.ctx == null)
-            return;
-
         this.ctx.beginPath();
         this.ctx.moveTo(this.data.coordinateX/this.data.worldWidth*this.canvas.width,
             this.canvas.height - this.data.coordinateY/this.data.worldHeight*this.canvas.height);
@@ -194,15 +188,12 @@ class Minimap {
     }
 
     drawArea(input: RayHit[]): void {
-        if (this.canvas == null || this.ctx == null)
-            return;
         this.ctx.beginPath();
         this.ctx.moveTo(this.data.coordinateX/this.data.worldWidth*this.canvas.width,
             this.canvas.height - this.data.coordinateY/this.data.worldHeight*this.canvas.height);
 
         input.forEach((endpoint) => {
-            if (this.canvas != null && this.ctx != null)
-                this.ctx.lineTo(endpoint.x/this.data.worldWidth * this.canvas.width, this.canvas.height - endpoint.y/this.data.worldHeight * this.canvas.height);
+            this.ctx.lineTo(endpoint.x/this.data.worldWidth * this.canvas.width, this.canvas.height - endpoint.y/this.data.worldHeight * this.canvas.height);
         });
 
         this.ctx.moveTo(this.data.coordinateX/this.data.worldWidth*this.canvas.width,
@@ -221,8 +212,6 @@ class Minimap {
         for (let y=0; y<this.data.worldHeight; y++) {
             for (let x=0; x<this.data.worldWidth; x++) {
                 if (map[y][x] > 0) {
-                    if (this.canvas == null || this.ctx == null)
-                        continue;
                     let currPosX = x/(this.data.worldWidth);
                     let currPosY = y/(this.data.worldHeight);
                     this.ctx.beginPath();
@@ -236,17 +225,13 @@ class Minimap {
     }
 
     public drawPath(path: {x:number,y:number}[]) {
-        if (this.canvas == null || this.ctx == null)
-            return;
-
         let height = this.data.worldHeight - 1;
         let width = this.data.worldWidth - 1;
 
         this.ctx.beginPath();
         this.ctx.moveTo(path[0].x/width * this.canvas.offsetWidth, path[0].y/height * this.canvas.offsetHeight);
         path.forEach((point) => {
-            if (this.canvas != null && this.ctx != null)
-                this.ctx.lineTo(point.x/width * this.canvas.offsetWidth, point.y/height * this.canvas.offsetHeight);
+            this.ctx.lineTo(point.x/width * this.canvas.offsetWidth, point.y/height * this.canvas.offsetHeight);
         });
         this.ctx.strokeStyle = 'Blue';
         this.ctx.stroke();
@@ -254,9 +239,8 @@ class Minimap {
 };
 
 class Renderer {
-    private canvas: (HTMLCanvasElement | null);
-    private ctx: (CanvasRenderingContext2D | null);
-    private client: HTMLElement = document.getElementById("gameContainer") as HTMLElement;
+    private canvas;
+    private ctx;
     private minWallHeight;
     private maxWallHeight;
     private playerHeight;
@@ -265,11 +249,11 @@ class Renderer {
     private wallHeight:number = 64;
 
     constructor(src: string, map: number[][]) {
-        this.canvas = document.getElementById(src) as HTMLCanvasElement;
+        this.canvas = document.getElementById(src);
         this.ctx = this.canvas.getContext('2d');
 
-        this.canvas.width = this.client.clientWidth;
-        this.canvas.height = this.client.clientHeight;
+        this.canvas.width = resolutionX;
+        this.canvas.height = resolutionY;
 
         this.minWallHeight = 0;
         this.maxWallHeight = this.canvas.height;
@@ -277,12 +261,6 @@ class Renderer {
     }
 
     public draw(input:RayHit[]) {
-        if (this.canvas == null || this.ctx == null)
-            return;
-        
-            this.canvas.width = this.client.clientWidth;
-            this.canvas.height = this.client.clientWidth * (3/4);
-        
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         let count:number = 0;
 
@@ -312,13 +290,13 @@ class RayHit {
 }
 
 class RayCaster {
-    public static tan(angle: number) {
+    public static tan(angle) {
         if ((angle>Math.PI/2 && angle<Math.PI) ||
             (angle>3*Math.PI/2 && angle < 2*Math.PI)) return -Math.tan(angle);
         return Math.tan(angle);
     }
 
-    public static checkCell(posX:number, posY:number, map: number[][]): boolean {
+    public static checkCell(posX:number, posY:number, map): boolean {
         if(posX>map[0].length-1 || posX<0 || posY>map.length-1 || posY<0) return false;
         let checkY = map.length - 1 - Math.floor(posY);
         let checkX = Math.floor(posX);
@@ -326,7 +304,7 @@ class RayCaster {
         return false;
     }
 
-    public static castSingleRay(posX: number, posY: number, angle: number, map: number[][]) {
+    public static castSingleRay(posX: number, posY: number, angle: number, map) {
         let dx: number = 0;
         let dy: number = 0;
         let vy: number = 0;
