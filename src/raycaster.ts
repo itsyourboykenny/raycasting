@@ -9,6 +9,11 @@ Number.prototype.mod = function (n) {
     return (((this as number) % n) + n) % n;
 };
 
+/**
+ * Essentially is the player. It holds location information of where the player is currently located
+ * The minimap, renderer and pathfinding classes will reference this object for what the player is doing.
+ * It will monitor keypress events
+ */
 class LocationData {
     public coordinateX: number = 0;
     public coordinateY: number = 0;
@@ -138,11 +143,18 @@ class LocationData {
     }
 };
 
+/**
+ * Draws the minimap. It uses LocationData object to draw what what the player is doing and looking at
+ */
 class Minimap {
     public canvas: (HTMLCanvasElement | null);
     public ctx: (CanvasRenderingContext2D | null);
     private data: LocationData;
 
+    /**
+     * @param src : id of the canvas to draw the minimap
+     * @param theData : LocationData object which holds the player location info
+     */
     constructor(src: string, theData: LocationData) {
         this.canvas = document.getElementById(src) as HTMLCanvasElement;
         this.ctx = (this.canvas as HTMLCanvasElement).getContext('2d');
@@ -156,6 +168,11 @@ class Minimap {
             this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height);
     }
 
+    /**
+     * Primary draw method. When in use this one should be called.
+     * This calls other method as needed for you program
+     * @param input : Array of Rayhit objects to draw from
+     */
     draw(input:RayHit[]): void {
         this.drawPlayer();
         this.drawArea(input);
@@ -193,6 +210,11 @@ class Minimap {
         this.ctx.stroke();
     }
 
+    /**
+     * Draws a solid cone which is the player's field of view
+     * @param input : Array of Rayhit objects to draw from
+     * @returns 
+     */
     drawArea(input: RayHit[]): void {
         if (this.canvas == null || this.ctx == null)
             return;
@@ -235,6 +257,10 @@ class Minimap {
         }
     }
 
+    /**
+     * Draws a line path from the given array of x,y coordinates
+     * @param path : Array of {x,y} to draw points
+     */
     public drawPath(path: {x:number,y:number}[]) {
         if (this.canvas == null || this.ctx == null)
             return;
@@ -253,6 +279,9 @@ class Minimap {
     }
 };
 
+/**
+ * The class that renders the actual game into a canvas by it's id
+ */
 class Renderer {
     private canvas: (HTMLCanvasElement | null);
     private ctx: (CanvasRenderingContext2D | null);
@@ -264,6 +293,10 @@ class Renderer {
     private projectionDist:number = 16;
     private wallHeight:number = 64;
 
+    /**
+     * @param src : id of the canvas to draw the game
+     * @param map : 2d array of ints that is the map
+     */
     constructor(src: string, map: number[][]) {
         this.canvas = document.getElementById(src) as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d');
@@ -276,6 +309,10 @@ class Renderer {
         this.playerHeight = 0.1 * this.canvas.height;
     }
 
+    /**
+     * Draws vetical lines (y resolution) times of canvas from left to right using data from an array of RayHits
+     * @param input : Array of Rayhit objects
+     */
     public draw(input:RayHit[]) {
         if (this.canvas == null || this.ctx == null)
             return;
@@ -301,6 +338,10 @@ class Renderer {
     }
 };
 
+/**
+ * Data struct that hold information about the where the ray hit
+ * correctDist is the orthagonal distance between the player and the wall hit.
+ */
 class RayHit {
     constructor(
         public x:number,
@@ -311,6 +352,9 @@ class RayHit {
     ){}
 }
 
+/**
+ * The raycaster engine used in the original Wolfenstein game, but written using JavaScript
+ */
 class RayCaster {
     public static tan(angle: number) {
         if ((angle>Math.PI/2 && angle<Math.PI) ||
@@ -326,6 +370,14 @@ class RayCaster {
         return false;
     }
 
+    /**
+     * Casts a single ray from where the player is and returns the first cell it has hit
+     * @param posX : Players x position
+     * @param posY : Players y position
+     * @param angle : Angle at which the player is looking
+     * @param map : 2d array of ints that is the map
+     * @returns : x,y cell which the ray has hit
+     */
     public static castSingleRay(posX: number, posY: number, angle: number, map: number[][]) {
         let dx: number = 0;
         let dy: number = 0;

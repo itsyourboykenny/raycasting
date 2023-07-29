@@ -1,3 +1,9 @@
+/**
+ * This class handles drawing the joystick to the screen. Takes the id of the div tag
+ * as parameter and it's max travel distance in pixels. xy object can be monitored by
+ * other classes to determine its movement
+ */
+
 class Joystick {
     public id:string;
     public xy: {x:number, y:number};
@@ -27,6 +33,12 @@ class Joystick {
         window.addEventListener('mouseup', this.touchUp.bind(this));
     }
 
+    /**
+     * Monitors both touch and mouse down event.
+     * Triggers the start of a drag movement
+     * 
+     * @param event: eventhandler object
+     */
     public touchDown(event: any) {
         event.preventDefault();
         this.active = true;
@@ -45,6 +57,10 @@ class Joystick {
 
     }
 
+    /**
+     * Monitors when the mouse/touch has moves across the screen
+     * @param event: eventhandler object
+     */
     public touchMove(event: any) {
         if (!this.active) return;
 
@@ -67,6 +83,10 @@ class Joystick {
         this.drawPath(this.xy);
     }
     
+    /**
+     * Monitors when touch/mouse click has been cancelled
+     * @param event: eventhandler object
+     */
     public touchUp(event: any) {
         if ((event instanceof TouchEvent)
             && ((event as TouchEvent).changedTouches[0].identifier != this.touchID))
@@ -79,12 +99,20 @@ class Joystick {
         this.ctx.clearRect(0,0,(this.canvas.offsetWidth as number), (this.canvas.offsetHeight as number));
     }
     
+    /**
+     * Limits joystick input to +maxDistance/-maxDistance
+     * @param i: Vector length of the movement of joystick from center of screen
+     */
     private minMax(i: number) {
         let temp = Math.min(i, this.maxDistance);
         temp = Math.max(-this.maxDistance, temp);
         return temp;
     }
 
+    /**
+     * Draws an arrow in the joystick div from center
+     * @param change: the x y coordinate of where the joystick currently is
+     */
     public drawPath(change: {x:number, y:number}) {
         let centerX = this.canvas.offsetWidth/2;
         let centerY = this.canvas.offsetHeight/2;

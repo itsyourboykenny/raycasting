@@ -1,4 +1,14 @@
+/**
+ * Data struct used for storing vertex information. This will be in a priority queue used
+ * by a* to determine the shortest path between you and the enemy
+ */
 class Vertex {
+    /**
+     * x: X position in map
+     * y: Y position in map
+     * h: Heuristic distance. Linear distance from this node to the goal
+     * f: Travel distance to this node + Heuristic distance
+     */
     public x: number;
     public y: number;
     public prev: Vertex|null = null;
@@ -29,6 +39,9 @@ class Vertex {
     }
 }
 
+/**
+ * Priority Queue used for A* algorithm
+ */
 class PQ {
     private list: Vertex[] = [];
 
@@ -59,6 +72,9 @@ class PQ {
     }
 }
 
+/**
+ * This class stores the 2d array of Vertex objects
+ */
 class VertexMap {
     public map: (Vertex | null) [][];
 
@@ -80,18 +96,32 @@ class VertexMap {
     }
 }
 
+/**
+ * A* path finding algorithm
+ */
 class aStar {
-
+    /**
+     * Visits a single node from a given point, to another. Determined by parameters origin and target
+     * @param origin : Vertex of the the node it came from
+     * @param target : Ending vertex location
+     * @param endP : xy coordinate of where the goal is
+     * @param queue : The prioritoy queue to track most promising nodes
+     * @param map : The 2d array of ints that is the game map
+     * @param vMap : 2d array of vertices that corresponds to map
+     * @param unit : The distance cost from origin to target
+     */
     static checkSpot(origin: Vertex, target:{x:number,y:number}, endP: {x:number, y:number}, queue: PQ, map: number[][], vMap: VertexMap, unit:number) {
         if(target.y>map.length-1 || target.y<0) return;
         if(target.x>map[0].length-1 || target.x<0) return;
         if(map[target.y][target.x] != 0) return;
 
+        // Calculate heuristic and travel distance
         let temp = new Vertex({x:target.x,y:target.y}, endP);
         temp.distance = origin.distance + unit;
         temp.f = temp.distance + temp.h;
         temp.prev = origin;
         
+        // Update if a shorter path is discovered
         if(vMap.map[target.y][target.x] instanceof Vertex
             && !(vMap.map[target.y][target.x] as Vertex).visited
             && (vMap.map[target.y][target.x] as Vertex).f > temp.f) {
@@ -105,6 +135,14 @@ class aStar {
         }
     }
 
+    /**
+     * Calls checkSpot() on all adjacent vertices. x,y and diagonal
+     * @param origin : Vertex of the the node it came from
+     * @param endP : X Y location of the goal
+     * @param queue : The prioritoy queue to track most promising nodes
+     * @param map : 2d array of ints that is the map
+     * @param vMap : 2d array of vertices that mirrors the map
+     */
     static checkAdj(origin: Vertex, endP: {x:number, y:number}, queue: PQ, map: number[][], vMap: VertexMap) {
         origin.visited = true;
 
@@ -149,6 +187,13 @@ class aStar {
         this.checkSpot(origin,{x:x,y:y},endP,queue,map,vMap,origin.diagLen);
     }
 
+    /**
+     * Runs the A* algorithm
+     * @param start : x,y location of the starting point
+     * @param end : x,y location of the ending point
+     * @param map : 2d array of ints that is the map
+     * @returns: An array of x,y coordinates
+     */
     static explore(start: {x:number, y:number}, end: {x:number, y:number}, map: number[][]): {x:number,y:number}[] {
         let vMap = new VertexMap(map);
         let queue = new PQ();
