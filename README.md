@@ -18,3 +18,6 @@ There are 3 main components: LocationData, Minimap and Renderer
 
 ## Example
 See `main.js` for a basic usage example
+
+See it in action:
+https://excellent-pickle-sprite.glitch.me/
